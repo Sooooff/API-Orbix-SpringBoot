@@ -1,0 +1,26 @@
+package com.example.orbixapi.model;
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
+@Entity
+@Table(name="vehicles")
+@Getter
+@Setter
+public class Vehicle {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String brand;
+
+    private String model;
+
+    private Double pricePerDay;
+
+    private String imageUrl;
+
+    private Boolean available;
+
+    public Vehicle(){}
+}
