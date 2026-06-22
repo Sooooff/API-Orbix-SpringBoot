@@ -16,6 +16,13 @@ public class Vehicle {
 
     private String model;
 
+    private String year;
+
+    //Pasarlo a ENUM
+    private String transmission;
+
+    private String passengers;
+
     private Double pricePerDay;
 
     private String imageUrl;
