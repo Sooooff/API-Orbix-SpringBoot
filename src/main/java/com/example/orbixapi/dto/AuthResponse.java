@@ -6,9 +6,10 @@ public record AuthResponse(
         String token,
         String type,
         String email,
-        List<String> roles
+        List<String> roles,
+        List<String> permissions
 ) {
-    public static AuthResponse of(String token, String email, List<String> roles) {
-        return new AuthResponse(token, "Bearer", email, roles);
+    public static AuthResponse of(String token, String email, List<String> roles, List<String> permissions) {
+        return new AuthResponse(token, "Bearer", email, roles, permissions);
     }
 }

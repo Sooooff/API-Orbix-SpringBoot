@@ -3,9 +3,12 @@ package com.example.orbixapi.config;
 import com.example.orbixapi.model.Permiso;
 import com.example.orbixapi.model.Rol;
 import com.example.orbixapi.model.RolNombre;
+import com.example.orbixapi.model.Usuario;
 import com.example.orbixapi.repository.PermisoRepository;
 import com.example.orbixapi.repository.RolRepository;
+import com.example.orbixapi.repository.UsuarioRepository;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.util.HashSet;
@@ -16,18 +19,30 @@ import java.util.Set;
 @Component
 public class DataSeeder implements CommandLineRunner {
 
+    private static final String SEED_PASSWORD = "password123";
+
     private final PermisoRepository permisoRepository;
     private final RolRepository rolRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public DataSeeder(PermisoRepository permisoRepository, RolRepository rolRepository) {
+    public DataSeeder(
+            PermisoRepository permisoRepository,
+            RolRepository rolRepository,
+            UsuarioRepository usuarioRepository,
+            PasswordEncoder passwordEncoder
+    ) {
         this.permisoRepository = permisoRepository;
         this.rolRepository = rolRepository;
+        this.usuarioRepository = usuarioRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
     public void run(String... args) {
         seedPermisos();
         seedRoles();
+        seedUsuarios();
     }
 
     private void seedPermisos() {
@@ -90,6 +105,30 @@ public class DataSeeder implements CommandLineRunner {
             }
             rol.setPermisos(permisos);
             rolRepository.save(rol);
+        });
+    }
+
+    private void seedUsuarios() {
+        Map<String, RolNombre> usuarios = Map.of(
+                "cliente@orbix.com", RolNombre.ROLE_CLIENTE,
+                "arrendador@orbix.com", RolNombre.ROLE_ARRENDADOR,
+                "admin@orbix.com", RolNombre.ROLE_ADMIN
+        );
+
+        usuarios.forEach((email, rolNombre) -> {
+            if (usuarioRepository.existsByEmail(email)) {
+                return;
+            }
+
+            Rol rol = rolRepository.findByNombre(rolNombre)
+                    .orElseThrow(() -> new IllegalStateException("Rol no encontrado: " + rolNombre));
+
+            Usuario usuario = new Usuario();
+            usuario.setEmail(email);
+            usuario.setPassword(passwordEncoder.encode(SEED_PASSWORD));
+            usuario.setNombre(email.split("@")[0]);
+            usuario.setRoles(Set.of(rol));
+            usuarioRepository.save(usuario);
         });
     }
 }
