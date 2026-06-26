@@ -1,8 +1,9 @@
 package com.example.orbixapi.controller;
 
-import com.example.orbixapi.model.Vehicle;
+import com.example.orbixapi.dto.VehicleDto;
 import com.example.orbixapi.service.VehicleService;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -11,17 +12,21 @@ import java.util.List;
 @RequestMapping("/vehicles")
 @CrossOrigin("*")
 public class VehicleController {
-    @Autowired
-    private VehicleService service;
+
+    private final VehicleService service;
+
+    public VehicleController(VehicleService service) {
+        this.service = service;
+    }
 
     @GetMapping
-    public List<Vehicle> getAll(){
+    public List<VehicleDto> getAll() {
         return service.getAll();
     }
 
     @PostMapping
-    public Vehicle save(
-            @RequestBody Vehicle vehicle){
-        return service.save(vehicle);
+    @ResponseStatus(HttpStatus.CREATED)
+    public VehicleDto save(@Valid @RequestBody VehicleDto dto) {
+        return service.save(dto);
     }
 }
