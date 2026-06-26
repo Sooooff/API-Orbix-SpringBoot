@@ -29,5 +29,9 @@ public class Vehicle {
 
     private Boolean available;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "owner_id")
+    private Usuario owner;
+
     public Vehicle(){}
 }
