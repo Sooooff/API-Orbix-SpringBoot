@@ -185,7 +185,8 @@ public class DataSeeder implements CommandLineRunner {
         resena.setVehicle(vehicle);
         resena.setRating(5);
         resena.setTags(List.of(
-                ReviewTag.ANFITRION_AMABLE,
+                ReviewTag.EXCELENTE_ESTADO,
+                ReviewTag.MUY_LIMPIO,
                 ReviewTag.RECOMENDADO
         ));
         resena.setComment("Auto en excelente estado, muy limpio y cómodo.");
@@ -209,7 +210,7 @@ public class DataSeeder implements CommandLineRunner {
         resena.setReviewed(cliente);
         resena.setRating(4);
         resena.setTags(List.of(
-                ReviewTag.MUY_PUNTUAL,
+                ReviewTag.PUNTUAL,
                 ReviewTag.RESPETUOSO,
                 ReviewTag.CUIDO_EL_VEHICULO
         ));

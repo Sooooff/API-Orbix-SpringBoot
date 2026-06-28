@@ -4,10 +4,14 @@ import com.example.orbixapi.dto.CreateReviewRequest;
 import com.example.orbixapi.dto.CreateUserReviewRequest;
 import com.example.orbixapi.dto.ReviewResponse;
 import com.example.orbixapi.dto.UserReviewResponse;
+import com.example.orbixapi.dto.AllReviewTagsResponse;
+import com.example.orbixapi.dto.ReviewTagsResponse;
 import com.example.orbixapi.dto.UserReviewSummary;
 import com.example.orbixapi.dto.VehicleReviewSummary;
 import com.example.orbixapi.model.Resena;
 import com.example.orbixapi.model.ResenaUsuario;
+import com.example.orbixapi.model.ReviewTagCatalog;
+import com.example.orbixapi.model.ReviewType;
 import com.example.orbixapi.model.RolNombre;
 import com.example.orbixapi.model.Usuario;
 import com.example.orbixapi.model.Vehicle;
@@ -64,6 +68,8 @@ public class ResenaService {
             throw new IllegalArgumentException("Ya dejaste una reseña a este vehículo");
         }
 
+        ReviewTagCatalog.validate(ReviewType.VEHICLE, request.rating(), request.tags());
+
         Resena resena = new Resena();
         resena.setReviewer(reviewer);
         resena.setVehicle(vehicle);
@@ -101,6 +107,8 @@ public class ResenaService {
         if (resenaUsuarioRepository.findByReviewerIdAndReviewedId(reviewer.getId(), reviewed.getId()).isPresent()) {
             throw new IllegalArgumentException("Ya dejaste una reseña a este cliente");
         }
+
+        ReviewTagCatalog.validate(ReviewType.USER, request.rating(), request.tags());
 
         ResenaUsuario resena = new ResenaUsuario();
         resena.setReviewer(reviewer);
@@ -168,6 +176,21 @@ public class ResenaService {
                 total,
                 sentimentLabel(average, total),
                 usuario.getMemberSinceYear()
+        );
+    }
+
+    public ReviewTagsResponse getTagsForRating(ReviewType type, int rating) {
+        return new ReviewTagsResponse(
+                rating,
+                type,
+                ReviewTagCatalog.optionsFor(type, rating)
+        );
+    }
+
+    public AllReviewTagsResponse getAllTags() {
+        return new AllReviewTagsResponse(
+                ReviewTagCatalog.allVehicleOptions(),
+                ReviewTagCatalog.allUserOptions()
         );
     }
 

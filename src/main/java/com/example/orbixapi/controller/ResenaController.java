@@ -3,7 +3,10 @@ package com.example.orbixapi.controller;
 import com.example.orbixapi.dto.CreateReviewRequest;
 import com.example.orbixapi.dto.CreateUserReviewRequest;
 import com.example.orbixapi.dto.ReviewResponse;
+import com.example.orbixapi.dto.AllReviewTagsResponse;
+import com.example.orbixapi.dto.ReviewTagsResponse;
 import com.example.orbixapi.dto.UserReviewResponse;
+import com.example.orbixapi.model.ReviewType;
 import com.example.orbixapi.dto.UserReviewSummary;
 import com.example.orbixapi.dto.VehicleReviewSummary;
 import com.example.orbixapi.service.ResenaService;
@@ -41,6 +44,19 @@ public class ResenaController {
             @AuthenticationPrincipal UserDetails userDetails
     ) {
         return resenaService.createUserReview(request, userDetails.getUsername());
+    }
+
+    @GetMapping("/tags/all")
+    public AllReviewTagsResponse getAllTags() {
+        return resenaService.getAllTags();
+    }
+
+    @GetMapping("/tags")
+    public ReviewTagsResponse getTags(
+            @RequestParam int rating,
+            @RequestParam ReviewType type
+    ) {
+        return resenaService.getTagsForRating(type, rating);
     }
 
     @GetMapping("/vehicle/{vehicleId}")
