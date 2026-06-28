@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -34,6 +35,9 @@ public class Usuario {
     @Column(nullable = false)
     private boolean enabled = true;
 
+    @Column(updatable = false)
+    private LocalDateTime createdAt;
+
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "usuario_roles",
@@ -41,4 +45,15 @@ public class Usuario {
             inverseJoinColumns = @JoinColumn(name = "rol_id")
     )
     private Set<Rol> roles = new HashSet<>();
+
+    @PrePersist
+    void onCreate() {
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
+        }
+    }
+
+    public Integer getMemberSinceYear() {
+        return createdAt != null ? createdAt.getYear() : null;
+    }
 }

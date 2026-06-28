@@ -1,6 +1,7 @@
 package com.example.orbixapi.controller;
 
 import com.example.orbixapi.dto.VehicleDto;
+import com.example.orbixapi.model.Vehicle;
 import com.example.orbixapi.service.VehicleService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

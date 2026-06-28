@@ -1,12 +1,15 @@
 package com.example.orbixapi.config;
 
 import com.example.orbixapi.model.Permiso;
+import com.example.orbixapi.model.Resena;
+import com.example.orbixapi.model.ReviewTag;
 import com.example.orbixapi.model.Rol;
 import com.example.orbixapi.model.RolNombre;
 import com.example.orbixapi.model.Usuario;
 import com.example.orbixapi.model.Vehicle;
 import com.example.orbixapi.model.VehicleCategory;
 import com.example.orbixapi.repository.PermisoRepository;
+import com.example.orbixapi.repository.ResenaRepository;
 import com.example.orbixapi.repository.RolRepository;
 import com.example.orbixapi.repository.UsuarioRepository;
 import com.example.orbixapi.repository.VehicleRepository;
@@ -28,6 +31,7 @@ public class DataSeeder implements CommandLineRunner {
     private final RolRepository rolRepository;
     private final UsuarioRepository usuarioRepository;
     private final VehicleRepository vehicleRepository;
+    private final ResenaRepository resenaRepository;
     private final PasswordEncoder passwordEncoder;
 
     public DataSeeder(
@@ -35,12 +39,14 @@ public class DataSeeder implements CommandLineRunner {
             RolRepository rolRepository,
             UsuarioRepository usuarioRepository,
             VehicleRepository vehicleRepository,
+            ResenaRepository resenaRepository,
             PasswordEncoder passwordEncoder
     ) {
         this.permisoRepository = permisoRepository;
         this.rolRepository = rolRepository;
         this.usuarioRepository = usuarioRepository;
         this.vehicleRepository = vehicleRepository;
+        this.resenaRepository = resenaRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -50,6 +56,7 @@ public class DataSeeder implements CommandLineRunner {
         seedRoles();
         seedUsuarios();
         fixVehiclesSinCategoria();
+        seedResenas();
     }
 
     private void seedPermisos() {
@@ -154,5 +161,29 @@ public class DataSeeder implements CommandLineRunner {
                 vehicleRepository.save(vehicle);
             }
         });
+    }
+
+    private void seedResenas() {
+        if (resenaRepository.count() > 0) {
+            return;
+        }
+
+        Usuario cliente = usuarioRepository.findByEmail("cliente@orbix.com").orElse(null);
+        if (cliente == null || vehicleRepository.count() == 0) {
+            return;
+        }
+
+        Vehicle vehicle = vehicleRepository.findAll().get(0);
+
+        Resena resena = new Resena();
+        resena.setReviewer(cliente);
+        resena.setVehicle(vehicle);
+        resena.setRating(5);
+        resena.setTags(List.of(
+                ReviewTag.ANFITRION_AMABLE,
+                ReviewTag.RECOMENDADO
+        ));
+        resena.setComment("Auto en excelente estado, muy limpio y cómodo.");
+        resenaRepository.save(resena);
     }
 }
