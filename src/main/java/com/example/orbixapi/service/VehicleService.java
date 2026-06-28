@@ -1,8 +1,11 @@
 package com.example.orbixapi.service;
 
-import com.example.orbixapi.dto.VehicleDto;
-import com.example.orbixapi.dto.VehicleMapper;
+import com.example.orbixapi.model.Usuario;
+import com.example.orbixapi.model.Vehicle;
+import com.example.orbixapi.model.VehicleCategory;
+import com.example.orbixapi.repository.UsuarioRepository;
 import com.example.orbixapi.repository.VehicleRepository;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -11,18 +14,27 @@ import java.util.List;
 public class VehicleService {
 
     private final VehicleRepository repository;
+    private final UsuarioRepository usuarioRepository;
 
-    public VehicleService(VehicleRepository repository) {
+    public VehicleService(VehicleRepository repository, UsuarioRepository usuarioRepository) {
         this.repository = repository;
+        this.usuarioRepository = usuarioRepository;
     }
 
-    public List<VehicleDto> getAll() {
-        return repository.findAll().stream()
-                .map(VehicleMapper::toDto)
-                .toList();
+    public List<Vehicle> getAll() {
+        return repository.findAll();
     }
 
-    public VehicleDto save(VehicleDto dto) {
-        return VehicleMapper.toDto(repository.save(VehicleMapper.toEntity(dto)));
+    public Vehicle save(Vehicle vehicle, String ownerEmail) {
+        Usuario owner = usuarioRepository.findByEmail(ownerEmail)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + ownerEmail));
+        vehicle.setOwner(owner);
+        if (vehicle.getAvailable() == null) {
+            vehicle.setAvailable(true);
+        }
+        if (vehicle.getCategory() == null) {
+            throw new IllegalArgumentException("La categoría es obligatoria");
+        }
+        return repository.save(vehicle);
     }
 }

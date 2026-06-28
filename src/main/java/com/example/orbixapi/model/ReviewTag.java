@@ -1,0 +1,38 @@
+package com.example.orbixapi.model;
+
+public enum ReviewTag {
+    // Legacy (reseñas guardadas antes)
+    ANFITRION_AMABLE,
+    RESPUESTA_RAPIDA,
+    INSTRUCCIONES_CLARAS,
+
+    // Compartidos
+    RECOMENDADO,
+    NO_RECOMENDADO,
+
+    // Vehículo
+    EXCELENTE_ESTADO,
+    MUY_LIMPIO,
+    BUEN_ESTADO,
+    LIMPIO,
+    BUENA_ATENCION,
+    ESTADO_ACEPTABLE,
+    REGULAR_LIMPIEZA,
+    POCO_LIMPIO,
+    NO_COINCIDE_DESCRIPCION,
+    MAL_ESTADO,
+    MUY_SUCIO,
+
+    // Cliente
+    MUY_PUNTUAL,
+    MUY_RESPETUOSO,
+    PUNTUAL,
+    RESPETUOSO,
+    CUIDO_EL_VEHICULO,
+    ENTREGA_ACEPTABLE,
+    CUIDADO_REGULAR,
+    IMPUNTUAL,
+    CUIDADO_DEFICIENTE,
+    MUY_IMPUNTUAL,
+    DANOS_AL_VEHICULO
+}
