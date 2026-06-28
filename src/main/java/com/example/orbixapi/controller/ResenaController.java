@@ -1,7 +1,10 @@
 package com.example.orbixapi.controller;
 
 import com.example.orbixapi.dto.CreateReviewRequest;
+import com.example.orbixapi.dto.CreateUserReviewRequest;
 import com.example.orbixapi.dto.ReviewResponse;
+import com.example.orbixapi.dto.UserReviewResponse;
+import com.example.orbixapi.dto.UserReviewSummary;
 import com.example.orbixapi.dto.VehicleReviewSummary;
 import com.example.orbixapi.service.ResenaService;
 import jakarta.validation.Valid;
@@ -24,11 +27,20 @@ public class ResenaController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ReviewResponse create(
+    public ReviewResponse createVehicleReview(
             @Valid @RequestBody CreateReviewRequest request,
             @AuthenticationPrincipal UserDetails userDetails
     ) {
         return resenaService.create(request, userDetails.getUsername());
+    }
+
+    @PostMapping("/user")
+    @ResponseStatus(HttpStatus.CREATED)
+    public UserReviewResponse createUserReview(
+            @Valid @RequestBody CreateUserReviewRequest request,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        return resenaService.createUserReview(request, userDetails.getUsername());
     }
 
     @GetMapping("/vehicle/{vehicleId}")
@@ -39,5 +51,15 @@ public class ResenaController {
     @GetMapping("/vehicle/{vehicleId}/summary")
     public VehicleReviewSummary getVehicleSummary(@PathVariable Long vehicleId) {
         return resenaService.getVehicleSummary(vehicleId);
+    }
+
+    @GetMapping("/user/{userId}")
+    public List<UserReviewResponse> getByUser(@PathVariable Long userId) {
+        return resenaService.getByUser(userId);
+    }
+
+    @GetMapping("/user/{userId}/summary")
+    public UserReviewSummary getUserSummary(@PathVariable Long userId) {
+        return resenaService.getUserSummary(userId);
     }
 }

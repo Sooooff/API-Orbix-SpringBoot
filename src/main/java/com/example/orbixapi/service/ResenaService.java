@@ -1,13 +1,18 @@
 package com.example.orbixapi.service;
 
 import com.example.orbixapi.dto.CreateReviewRequest;
+import com.example.orbixapi.dto.CreateUserReviewRequest;
 import com.example.orbixapi.dto.ReviewResponse;
+import com.example.orbixapi.dto.UserReviewResponse;
+import com.example.orbixapi.dto.UserReviewSummary;
 import com.example.orbixapi.dto.VehicleReviewSummary;
 import com.example.orbixapi.model.Resena;
+import com.example.orbixapi.model.ResenaUsuario;
 import com.example.orbixapi.model.RolNombre;
 import com.example.orbixapi.model.Usuario;
 import com.example.orbixapi.model.Vehicle;
 import com.example.orbixapi.repository.ResenaRepository;
+import com.example.orbixapi.repository.ResenaUsuarioRepository;
 import com.example.orbixapi.repository.UsuarioRepository;
 import com.example.orbixapi.repository.VehicleRepository;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -21,15 +26,18 @@ import java.util.List;
 public class ResenaService {
 
     private final ResenaRepository resenaRepository;
+    private final ResenaUsuarioRepository resenaUsuarioRepository;
     private final UsuarioRepository usuarioRepository;
     private final VehicleRepository vehicleRepository;
 
     public ResenaService(
             ResenaRepository resenaRepository,
+            ResenaUsuarioRepository resenaUsuarioRepository,
             UsuarioRepository usuarioRepository,
             VehicleRepository vehicleRepository
     ) {
         this.resenaRepository = resenaRepository;
+        this.resenaUsuarioRepository = resenaUsuarioRepository;
         this.usuarioRepository = usuarioRepository;
         this.vehicleRepository = vehicleRepository;
     }
@@ -63,7 +71,45 @@ public class ResenaService {
         resena.setTags(request.tags() != null ? new ArrayList<>(request.tags()) : new ArrayList<>());
         resena.setComment(request.comment());
 
-        return toResponse(resenaRepository.save(resena));
+        return toVehicleResponse(resenaRepository.save(resena));
+    }
+
+    @Transactional
+    public UserReviewResponse createUserReview(CreateUserReviewRequest request, String reviewerEmail) {
+        Usuario reviewer = usuarioRepository.findByEmail(reviewerEmail)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + reviewerEmail));
+
+        boolean isArrendador = reviewer.getRoles().stream()
+                .anyMatch(rol -> rol.getNombre() == RolNombre.ROLE_ARRENDADOR);
+        if (!isArrendador) {
+            throw new IllegalArgumentException("Solo los arrendadores pueden reseñar clientes");
+        }
+
+        Usuario reviewed = usuarioRepository.findById(request.reviewedUserId())
+                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
+
+        boolean isCliente = reviewed.getRoles().stream()
+                .anyMatch(rol -> rol.getNombre() == RolNombre.ROLE_CLIENTE);
+        if (!isCliente) {
+            throw new IllegalArgumentException("Solo se pueden reseñar clientes");
+        }
+
+        if (reviewer.getId().equals(reviewed.getId())) {
+            throw new IllegalArgumentException("No puedes reseñarte a ti mismo");
+        }
+
+        if (resenaUsuarioRepository.findByReviewerIdAndReviewedId(reviewer.getId(), reviewed.getId()).isPresent()) {
+            throw new IllegalArgumentException("Ya dejaste una reseña a este cliente");
+        }
+
+        ResenaUsuario resena = new ResenaUsuario();
+        resena.setReviewer(reviewer);
+        resena.setReviewed(reviewed);
+        resena.setRating(request.rating());
+        resena.setTags(request.tags() != null ? new ArrayList<>(request.tags()) : new ArrayList<>());
+        resena.setComment(request.comment());
+
+        return toUserResponse(resenaUsuarioRepository.save(resena));
     }
 
     @Transactional(readOnly = true)
@@ -72,7 +118,17 @@ public class ResenaService {
             throw new IllegalArgumentException("Vehículo no encontrado");
         }
         return resenaRepository.findByVehicleIdOrderByFechaDesc(vehicleId).stream()
-                .map(this::toResponse)
+                .map(this::toVehicleResponse)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<UserReviewResponse> getByUser(Long userId) {
+        if (!usuarioRepository.existsById(userId)) {
+            throw new IllegalArgumentException("Usuario no encontrado");
+        }
+        return resenaUsuarioRepository.findByReviewedIdOrderByFechaDesc(userId).stream()
+                .map(this::toUserResponse)
                 .toList();
     }
 
@@ -97,7 +153,25 @@ public class ResenaService {
         );
     }
 
-    private ReviewResponse toResponse(Resena resena) {
+    @Transactional(readOnly = true)
+    public UserReviewSummary getUserSummary(Long userId) {
+        Usuario usuario = usuarioRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
+
+        long total = resenaUsuarioRepository.countByReviewedId(userId);
+        double average = total == 0 ? 0.0 : resenaUsuarioRepository.averageRatingByReviewedId(userId);
+
+        return new UserReviewSummary(
+                usuario.getId(),
+                usuario.getNombre(),
+                roundRating(average),
+                total,
+                sentimentLabel(average, total),
+                usuario.getMemberSinceYear()
+        );
+    }
+
+    private ReviewResponse toVehicleResponse(Resena resena) {
         Vehicle vehicle = resena.getVehicle();
         return new ReviewResponse(
                 resena.getId(),
@@ -109,6 +183,20 @@ public class ResenaService {
                 vehicle.getId(),
                 vehicle.getBrand(),
                 vehicle.getModel(),
+                resena.getFecha()
+        );
+    }
+
+    private UserReviewResponse toUserResponse(ResenaUsuario resena) {
+        return new UserReviewResponse(
+                resena.getId(),
+                resena.getRating(),
+                resena.getTags(),
+                resena.getComment(),
+                resena.getReviewer().getId(),
+                resena.getReviewer().getNombre(),
+                resena.getReviewed().getId(),
+                resena.getReviewed().getNombre(),
                 resena.getFecha()
         );
     }

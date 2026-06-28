@@ -2,6 +2,7 @@ package com.example.orbixapi.config;
 
 import com.example.orbixapi.model.Permiso;
 import com.example.orbixapi.model.Resena;
+import com.example.orbixapi.model.ResenaUsuario;
 import com.example.orbixapi.model.ReviewTag;
 import com.example.orbixapi.model.Rol;
 import com.example.orbixapi.model.RolNombre;
@@ -10,6 +11,7 @@ import com.example.orbixapi.model.Vehicle;
 import com.example.orbixapi.model.VehicleCategory;
 import com.example.orbixapi.repository.PermisoRepository;
 import com.example.orbixapi.repository.ResenaRepository;
+import com.example.orbixapi.repository.ResenaUsuarioRepository;
 import com.example.orbixapi.repository.RolRepository;
 import com.example.orbixapi.repository.UsuarioRepository;
 import com.example.orbixapi.repository.VehicleRepository;
@@ -32,6 +34,7 @@ public class DataSeeder implements CommandLineRunner {
     private final UsuarioRepository usuarioRepository;
     private final VehicleRepository vehicleRepository;
     private final ResenaRepository resenaRepository;
+    private final ResenaUsuarioRepository resenaUsuarioRepository;
     private final PasswordEncoder passwordEncoder;
 
     public DataSeeder(
@@ -40,6 +43,7 @@ public class DataSeeder implements CommandLineRunner {
             UsuarioRepository usuarioRepository,
             VehicleRepository vehicleRepository,
             ResenaRepository resenaRepository,
+            ResenaUsuarioRepository resenaUsuarioRepository,
             PasswordEncoder passwordEncoder
     ) {
         this.permisoRepository = permisoRepository;
@@ -47,6 +51,7 @@ public class DataSeeder implements CommandLineRunner {
         this.usuarioRepository = usuarioRepository;
         this.vehicleRepository = vehicleRepository;
         this.resenaRepository = resenaRepository;
+        this.resenaUsuarioRepository = resenaUsuarioRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -185,5 +190,30 @@ public class DataSeeder implements CommandLineRunner {
         ));
         resena.setComment("Auto en excelente estado, muy limpio y cómodo.");
         resenaRepository.save(resena);
+
+        seedResenasUsuario(cliente);
+    }
+
+    private void seedResenasUsuario(Usuario cliente) {
+        if (resenaUsuarioRepository.count() > 0) {
+            return;
+        }
+
+        Usuario arrendador = usuarioRepository.findByEmail("arrendador@orbix.com").orElse(null);
+        if (arrendador == null) {
+            return;
+        }
+
+        ResenaUsuario resena = new ResenaUsuario();
+        resena.setReviewer(arrendador);
+        resena.setReviewed(cliente);
+        resena.setRating(4);
+        resena.setTags(List.of(
+                ReviewTag.MUY_PUNTUAL,
+                ReviewTag.RESPETUOSO,
+                ReviewTag.CUIDO_EL_VEHICULO
+        ));
+        resena.setComment("Cliente responsable, entregó el auto en buen estado.");
+        resenaUsuarioRepository.save(resena);
     }
 }
