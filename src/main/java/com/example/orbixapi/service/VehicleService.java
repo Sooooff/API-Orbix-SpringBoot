@@ -28,6 +28,9 @@ public class VehicleService {
         Usuario owner = usuarioRepository.findByEmail(ownerEmail)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + ownerEmail));
         vehicle.setOwner(owner);
+        if (vehicle.getAvailable() == null) {
+            vehicle.setAvailable(true);
+        }
         return repository.save(vehicle);
     }
 }
