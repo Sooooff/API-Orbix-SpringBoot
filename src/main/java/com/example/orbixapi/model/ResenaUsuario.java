@@ -43,7 +43,7 @@ public class ResenaUsuario {
     @Column(length = 1000)
     private String comment;
 
-    @Column(name = "fecha", nullable = false, updatable = false)
+    @Column(name = "fecha", updatable = false)
     private LocalDateTime fecha;
 
     @PrePersist

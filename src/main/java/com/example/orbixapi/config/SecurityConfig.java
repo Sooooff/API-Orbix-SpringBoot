@@ -84,7 +84,12 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/register", "/auth/login").permitAll()
                         .requestMatchers(HttpMethod.GET, "/vehicles/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/reviews/**").permitAll()
+                        .requestMatchers(HttpMethod.GET,
+                                "/reviews/vehicle/**",
+                                "/reviews/user/**",
+                                "/reviews/tags",
+                                "/reviews/tags/**"
+                        ).permitAll()
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(authenticationEntryPoint()))

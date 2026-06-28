@@ -28,7 +28,7 @@ public class ResenaController {
         this.resenaService = resenaService;
     }
 
-    @PostMapping
+    @PostMapping("/vehicle")
     @ResponseStatus(HttpStatus.CREATED)
     public ReviewResponse createVehicleReview(
             @Valid @RequestBody CreateReviewRequest request,
