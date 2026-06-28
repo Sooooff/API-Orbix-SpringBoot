@@ -178,21 +178,25 @@ public class DataSeeder implements CommandLineRunner {
             return;
         }
 
-        Vehicle vehicle = vehicleRepository.findAll().get(0);
+        try {
+            Vehicle vehicle = vehicleRepository.findAll().get(0);
 
-        Resena resena = new Resena();
-        resena.setReviewer(cliente);
-        resena.setVehicle(vehicle);
-        resena.setRating(5);
-        resena.setTags(List.of(
-                ReviewTag.EXCELENTE_ESTADO,
-                ReviewTag.MUY_LIMPIO,
-                ReviewTag.RECOMENDADO
-        ));
-        resena.setComment("Auto en excelente estado, muy limpio y cómodo.");
-        resenaRepository.save(resena);
+            Resena resena = new Resena();
+            resena.setReviewer(cliente);
+            resena.setVehicle(vehicle);
+            resena.setRating(5);
+            resena.setTags(List.of(
+                    ReviewTag.EXCELENTE_ESTADO,
+                    ReviewTag.MUY_LIMPIO,
+                    ReviewTag.RECOMENDADO
+            ));
+            resena.setComment("Auto en excelente estado, muy limpio y cómodo.");
+            resenaRepository.save(resena);
 
-        seedResenasUsuario(cliente);
+            seedResenasUsuario(cliente);
+        } catch (Exception ex) {
+            // No bloquear el arranque si el esquema local de resenas está desactualizado
+        }
     }
 
     private void seedResenasUsuario(Usuario cliente) {

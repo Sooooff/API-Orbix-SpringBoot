@@ -1,6 +1,6 @@
 package com.example.orbixapi.service;
 
-import com.example.orbixapi.dto.CreateReviewRequest;
+import com.example.orbixapi.dto.CreateReviewBody;
 import com.example.orbixapi.dto.CreateUserReviewRequest;
 import com.example.orbixapi.dto.ReviewResponse;
 import com.example.orbixapi.dto.UserReviewResponse;
@@ -47,7 +47,7 @@ public class ResenaService {
     }
 
     @Transactional
-    public ReviewResponse create(CreateReviewRequest request, String reviewerEmail) {
+    public ReviewResponse create(Long vehiculoId, CreateReviewBody request, String reviewerEmail) {
         Usuario reviewer = usuarioRepository.findByEmail(reviewerEmail)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + reviewerEmail));
 
@@ -57,7 +57,7 @@ public class ResenaService {
             throw new IllegalArgumentException("Solo los clientes pueden reseñar vehículos");
         }
 
-        Vehicle vehicle = vehicleRepository.findById(request.vehicleId())
+        Vehicle vehicle = vehicleRepository.findById(vehiculoId)
                 .orElseThrow(() -> new IllegalArgumentException("Vehículo no encontrado"));
 
         if (vehicle.getOwner() != null && vehicle.getOwner().getId().equals(reviewer.getId())) {
