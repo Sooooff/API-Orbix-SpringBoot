@@ -29,6 +29,13 @@ public class Vehicle {
 
     private Boolean available;
 
+    @Column(length = 1000)
+    private String description;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private VehicleCategory category;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id")
     private Usuario owner;
