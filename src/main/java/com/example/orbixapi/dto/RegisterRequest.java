@@ -3,7 +3,7 @@ package com.example.orbixapi.dto;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.Pattern;
 
 import java.time.LocalDate;
 
@@ -14,7 +14,10 @@ public record RegisterRequest(
         String email,
 
         @NotBlank(message = "La contraseña es obligatoria")
-        @Size(min = 6, message = "La contraseña debe tener al menos 6 caracteres")
+        @Pattern(
+                regexp = "^(?=.*[A-Za-z]).{6,}$",
+                message = "La contraseña debe tener al menos 6 caracteres y contener al menos una letra"
+        )
         @JsonAlias({"contraseña", "contrasena"})
         String password,
 
