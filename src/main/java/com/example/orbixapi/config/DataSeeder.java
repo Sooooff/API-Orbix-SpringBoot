@@ -4,9 +4,12 @@ import com.example.orbixapi.model.Permiso;
 import com.example.orbixapi.model.Rol;
 import com.example.orbixapi.model.RolNombre;
 import com.example.orbixapi.model.Usuario;
+import com.example.orbixapi.model.Vehicle;
+import com.example.orbixapi.model.VehicleCategory;
 import com.example.orbixapi.repository.PermisoRepository;
 import com.example.orbixapi.repository.RolRepository;
 import com.example.orbixapi.repository.UsuarioRepository;
+import com.example.orbixapi.repository.VehicleRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -24,17 +27,20 @@ public class DataSeeder implements CommandLineRunner {
     private final PermisoRepository permisoRepository;
     private final RolRepository rolRepository;
     private final UsuarioRepository usuarioRepository;
+    private final VehicleRepository vehicleRepository;
     private final PasswordEncoder passwordEncoder;
 
     public DataSeeder(
             PermisoRepository permisoRepository,
             RolRepository rolRepository,
             UsuarioRepository usuarioRepository,
+            VehicleRepository vehicleRepository,
             PasswordEncoder passwordEncoder
     ) {
         this.permisoRepository = permisoRepository;
         this.rolRepository = rolRepository;
         this.usuarioRepository = usuarioRepository;
+        this.vehicleRepository = vehicleRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -43,6 +49,7 @@ public class DataSeeder implements CommandLineRunner {
         seedPermisos();
         seedRoles();
         seedUsuarios();
+        fixVehiclesSinCategoria();
     }
 
     private void seedPermisos() {
@@ -129,6 +136,23 @@ public class DataSeeder implements CommandLineRunner {
             usuario.setNombre(email.split("@")[0]);
             usuario.setRoles(Set.of(rol));
             usuarioRepository.save(usuario);
+        });
+    }
+
+    private void fixVehiclesSinCategoria() {
+        vehicleRepository.findAll().forEach(vehicle -> {
+            boolean changed = false;
+            if (vehicle.getCategory() == null) {
+                vehicle.setCategory(VehicleCategory.SEDAN);
+                changed = true;
+            }
+            if (vehicle.getDescription() == null) {
+                vehicle.setDescription("");
+                changed = true;
+            }
+            if (changed) {
+                vehicleRepository.save(vehicle);
+            }
         });
     }
 }

@@ -2,6 +2,7 @@ package com.example.orbixapi.service;
 
 import com.example.orbixapi.model.Usuario;
 import com.example.orbixapi.model.Vehicle;
+import com.example.orbixapi.model.VehicleCategory;
 import com.example.orbixapi.repository.UsuarioRepository;
 import com.example.orbixapi.repository.VehicleRepository;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -30,6 +31,9 @@ public class VehicleService {
         vehicle.setOwner(owner);
         if (vehicle.getAvailable() == null) {
             vehicle.setAvailable(true);
+        }
+        if (vehicle.getCategory() == null) {
+            throw new IllegalArgumentException("La categoría es obligatoria");
         }
         return repository.save(vehicle);
     }

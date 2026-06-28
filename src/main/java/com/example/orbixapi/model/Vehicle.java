@@ -33,7 +33,7 @@ public class Vehicle {
     private String description;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "categoria")
     private VehicleCategory category;
 
     @ManyToOne(fetch = FetchType.LAZY)
