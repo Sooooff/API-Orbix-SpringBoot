@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
@@ -31,6 +32,8 @@ public class Usuario {
     private String password;
 
     private String nombre;
+
+    private LocalDate fechaNacimiento;
 
     @Column(nullable = false)
     private boolean enabled = true;
