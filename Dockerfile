@@ -22,10 +22,8 @@ USER spring:spring
 
 COPY --from=build /app/target/orbix-api-0.0.1-SNAPSHOT.jar app.jar
 
-# Conexion a la base de datos (Postgres en el mismo servidor)
-ENV SPRING_DATASOURCE_URL=jdbc:postgresql://postgresql:5432/agrolab
-ENV SPRING_DATASOURCE_USERNAME=root
-ENV SPRING_DATASOURCE_PASSWORD=Agrolab(2026)
+# La conexion a la base de datos se inyecta por variables de entorno
+# (ver docker-compose.yml / .env), no se hornea en la imagen.
 
 EXPOSE 8082
 

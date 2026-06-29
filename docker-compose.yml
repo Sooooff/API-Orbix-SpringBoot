@@ -1,0 +1,23 @@
+services:
+  orbix-api:
+    build: .
+    image: orbix-api
+    container_name: orbix-api
+    restart: unless-stopped
+    networks:
+      - postgresql-waq2_default
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgresql:5432/agrolab
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=postgresql-waq2_default
+      - traefik.http.routers.orbix.rule=Host(`api.agrolab.tech`)
+      - traefik.http.routers.orbix.entrypoints=websecure
+      - traefik.http.routers.orbix.tls.certresolver=letsencrypt
+      - traefik.http.services.orbix.loadbalancer.server.port=8082
+
+networks:
+  postgresql-waq2_default:
+    external: true
