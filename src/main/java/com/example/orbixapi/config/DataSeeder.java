@@ -136,6 +136,14 @@ public class DataSeeder implements CommandLineRunner {
 
         usuarios.forEach((email, rolNombre) -> {
             if (usuarioRepository.existsByEmail(email)) {
+                if (rolNombre == RolNombre.ROLE_ARRENDADOR) {
+                    usuarioRepository.findByEmail(email).ifPresent(usuario -> {
+                        if (usuario.getTelefono() == null || usuario.getTelefono().isBlank()) {
+                            usuario.setTelefono("5512345678");
+                            usuarioRepository.save(usuario);
+                        }
+                    });
+                }
                 return;
             }
 
@@ -146,6 +154,9 @@ public class DataSeeder implements CommandLineRunner {
             usuario.setEmail(email);
             usuario.setPassword(passwordEncoder.encode(SEED_PASSWORD));
             usuario.setNombre(email.split("@")[0]);
+            if (rolNombre == RolNombre.ROLE_ARRENDADOR) {
+                usuario.setTelefono("5512345678");
+            }
             usuario.setRoles(Set.of(rol));
             usuarioRepository.save(usuario);
         });

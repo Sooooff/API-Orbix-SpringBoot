@@ -21,6 +21,7 @@ public class DatabaseSchemaFixer implements CommandLineRunner {
         jdbcTemplate.execute("ALTER TABLE resenas_usuario ADD COLUMN IF NOT EXISTS fecha timestamp");
         jdbcTemplate.execute("UPDATE resenas_usuario SET fecha = NOW() WHERE fecha IS NULL");
         fixVehicleTransmissionValues();
+        jdbcTemplate.execute("ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS telefono varchar(20)");
     }
 
     private void fixVehicleTransmissionValues() {

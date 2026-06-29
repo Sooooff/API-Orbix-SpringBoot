@@ -78,7 +78,8 @@ public class VehicleService {
                 vehicle.getDescription(),
                 vehicle.getCategory(),
                 owner != null ? owner.getId() : null,
-                owner != null ? owner.getNombre() : null
+                owner != null ? owner.getNombre() : null,
+                owner != null ? owner.getTelefono() : null
         );
     }
 }

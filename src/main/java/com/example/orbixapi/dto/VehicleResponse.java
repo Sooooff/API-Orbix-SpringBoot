@@ -16,6 +16,7 @@ public record VehicleResponse(
         String description,
         VehicleCategory category,
         Long ownerId,
-        String ownerName
+        String ownerName,
+        String ownerPhone
 ) {
 }

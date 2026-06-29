@@ -4,6 +4,7 @@ import com.example.orbixapi.dto.AuthResponse;
 import com.example.orbixapi.dto.ClientProfileResponse;
 import com.example.orbixapi.dto.LoginRequest;
 import com.example.orbixapi.dto.RegisterRequest;
+import com.example.orbixapi.dto.UpdatePhoneRequest;
 import com.example.orbixapi.model.Permiso;
 import com.example.orbixapi.model.RolNombre;
 import com.example.orbixapi.model.Usuario;
@@ -71,15 +72,55 @@ public class AuthController {
         var rol = rolRepository.findByNombre(rolNombre)
                 .orElseThrow(() -> new IllegalStateException("Rol no encontrado: " + rolNombre));
 
+        if (rolNombre == RolNombre.ROLE_ARRENDADOR) {
+            validateTelefono(request.telefono());
+        }
+
         Usuario usuario = new Usuario();
         usuario.setEmail(request.email());
         usuario.setPassword(passwordEncoder.encode(request.password()));
         usuario.setNombre(request.nombre());
         usuario.setFechaNacimiento(request.fechaNacimiento());
+        if (rolNombre == RolNombre.ROLE_ARRENDADOR) {
+            usuario.setTelefono(normalizeTelefono(request.telefono()));
+        }
         usuario.setRoles(Set.of(rol));
         usuarioRepository.save(usuario);
 
         return toResponse(usuario);
+    }
+
+    @PatchMapping("/phone")
+    @Transactional
+    public AuthResponse updatePhone(
+            @Valid @RequestBody UpdatePhoneRequest request,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        Usuario usuario = usuarioRepository.findByEmail(userDetails.getUsername()).orElseThrow();
+        boolean isArrendador = usuario.getRoles().stream()
+                .anyMatch(rol -> rol.getNombre() == RolNombre.ROLE_ARRENDADOR);
+        if (!isArrendador) {
+            throw new IllegalArgumentException("Solo los arrendadores pueden actualizar el teléfono");
+        }
+
+        validateTelefono(request.telefono());
+        usuario.setTelefono(normalizeTelefono(request.telefono()));
+        usuarioRepository.save(usuario);
+        return toResponse(usuario);
+    }
+
+    private void validateTelefono(String telefono) {
+        if (telefono == null || telefono.isBlank()) {
+            throw new IllegalArgumentException("El teléfono es obligatorio para arrendadores");
+        }
+        String normalized = normalizeTelefono(telefono);
+        if (!normalized.matches("^[+]?[0-9\\s-]{8,15}$")) {
+            throw new IllegalArgumentException("El teléfono debe tener entre 8 y 15 dígitos");
+        }
+    }
+
+    private String normalizeTelefono(String telefono) {
+        return telefono.trim();
     }
 
     @PostMapping("/login")
@@ -100,6 +141,7 @@ public class AuthController {
                 usuario.getEmail(),
                 usuario.getId(),
                 usuario.getNombre(),
+                usuario.getTelefono(),
                 roles(usuario),
                 permissions(usuario)
         );
@@ -126,6 +168,7 @@ public class AuthController {
                 usuario.getEmail(),
                 usuario.getId(),
                 usuario.getNombre(),
+                usuario.getTelefono(),
                 roles(usuario),
                 permissions(usuario)
         );
