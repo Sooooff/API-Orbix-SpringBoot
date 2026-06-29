@@ -1,6 +1,7 @@
 package com.example.orbixapi.controller;
 
 import com.example.orbixapi.dto.AuthResponse;
+import com.example.orbixapi.dto.ClientProfileResponse;
 import com.example.orbixapi.dto.LoginRequest;
 import com.example.orbixapi.dto.RegisterRequest;
 import com.example.orbixapi.model.Permiso;
@@ -9,6 +10,7 @@ import com.example.orbixapi.model.Usuario;
 import com.example.orbixapi.repository.RolRepository;
 import com.example.orbixapi.repository.UsuarioRepository;
 import com.example.orbixapi.security.JwtAuthFilter;
+import com.example.orbixapi.service.ResenaService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -34,6 +36,7 @@ public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final UserDetailsService userDetailsService;
     private final JwtAuthFilter jwtAuthFilter;
+    private final ResenaService resenaService;
 
     public AuthController(
             UsuarioRepository usuarioRepository,
@@ -41,7 +44,8 @@ public class AuthController {
             PasswordEncoder passwordEncoder,
             AuthenticationManager authenticationManager,
             UserDetailsService userDetailsService,
-            JwtAuthFilter jwtAuthFilter
+            JwtAuthFilter jwtAuthFilter,
+            ResenaService resenaService
     ) {
         this.usuarioRepository = usuarioRepository;
         this.rolRepository = rolRepository;
@@ -49,6 +53,7 @@ public class AuthController {
         this.authenticationManager = authenticationManager;
         this.userDetailsService = userDetailsService;
         this.jwtAuthFilter = jwtAuthFilter;
+        this.resenaService = resenaService;
     }
 
     @PostMapping("/register")
@@ -90,13 +95,40 @@ public class AuthController {
     @GetMapping("/me")
     public AuthResponse me(@AuthenticationPrincipal UserDetails userDetails) {
         Usuario usuario = usuarioRepository.findByEmail(userDetails.getUsername()).orElseThrow();
-        return AuthResponse.of(null, usuario.getEmail(), roles(usuario), permissions(usuario));
+        return AuthResponse.of(
+                null,
+                usuario.getEmail(),
+                usuario.getId(),
+                usuario.getNombre(),
+                roles(usuario),
+                permissions(usuario)
+        );
+    }
+
+    @GetMapping("/profile")
+    public ClientProfileResponse profile(@AuthenticationPrincipal UserDetails userDetails) {
+        Usuario usuario = usuarioRepository.findByEmail(userDetails.getUsername()).orElseThrow();
+        return new ClientProfileResponse(
+                usuario.getId(),
+                usuario.getNombre(),
+                usuario.getEmail(),
+                usuario.getMemberSinceYear(),
+                resenaService.getUserSummary(usuario.getId()),
+                resenaService.getByUser(usuario.getId())
+        );
     }
 
     private AuthResponse toResponse(Usuario usuario) {
         UserDetails userDetails = userDetailsService.loadUserByUsername(usuario.getEmail());
         String token = jwtAuthFilter.generateToken(userDetails);
-        return AuthResponse.of(token, usuario.getEmail(), roles(usuario), permissions(usuario));
+        return AuthResponse.of(
+                token,
+                usuario.getEmail(),
+                usuario.getId(),
+                usuario.getNombre(),
+                roles(usuario),
+                permissions(usuario)
+        );
     }
 
     private List<String> roles(Usuario usuario) {

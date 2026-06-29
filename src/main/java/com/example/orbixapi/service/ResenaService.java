@@ -145,9 +145,23 @@ public class ResenaService {
         if (!usuarioRepository.existsById(userId)) {
             throw new IllegalArgumentException("Usuario no encontrado");
         }
-        return resenaUsuarioRepository.findByReviewedIdOrderByFechaDesc(userId).stream()
+        return resenaUsuarioRepository.findByReviewedIdWithUsersOrderByFechaDesc(userId).stream()
                 .map(this::toUserResponse)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<UserReviewResponse> getMyReviews(String email) {
+        Usuario usuario = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + email));
+        return getByUser(usuario.getId());
+    }
+
+    @Transactional(readOnly = true)
+    public UserReviewSummary getMySummary(String email) {
+        Usuario usuario = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + email));
+        return getUserSummary(usuario.getId());
     }
 
     @Transactional(readOnly = true)

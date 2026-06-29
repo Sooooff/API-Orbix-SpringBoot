@@ -84,6 +84,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/register", "/auth/login").permitAll()
                         .requestMatchers(HttpMethod.GET, "/vehicles/mine").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/reviews/user/me", "/reviews/user/me/summary").authenticated()
+                        .requestMatchers("/auth/profile").authenticated()
                         .requestMatchers(HttpMethod.GET, "/vehicles/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/reviews/**").permitAll()
                         .anyRequest().authenticated()

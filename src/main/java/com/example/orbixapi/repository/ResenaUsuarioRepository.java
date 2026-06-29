@@ -9,6 +9,15 @@ import java.util.Optional;
 
 public interface ResenaUsuarioRepository extends JpaRepository<ResenaUsuario, Long> {
 
+    @Query("""
+            SELECT r FROM ResenaUsuario r
+            JOIN FETCH r.reviewer
+            JOIN FETCH r.reviewed
+            WHERE r.reviewed.id = :reviewedId
+            ORDER BY r.fecha DESC
+            """)
+    List<ResenaUsuario> findByReviewedIdWithUsersOrderByFechaDesc(Long reviewedId);
+
     List<ResenaUsuario> findByReviewedIdOrderByFechaDesc(Long reviewedId);
 
     Optional<ResenaUsuario> findByReviewerIdAndReviewedId(Long reviewerId, Long reviewedId);
