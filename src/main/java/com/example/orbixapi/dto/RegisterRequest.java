@@ -24,6 +24,9 @@ public record RegisterRequest(
         @JsonAlias({"nombreCompleto", "name"})
         String nombre,
 
+        @JsonAlias({"telefono", "phone", "celular"})
+        String telefono,
+
         @JsonAlias({"fechaNacimiento", "birthDate"})
         LocalDate fechaNacimiento
 ) {

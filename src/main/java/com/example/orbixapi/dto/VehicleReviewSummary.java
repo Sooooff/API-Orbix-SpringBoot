@@ -5,6 +5,7 @@ public record VehicleReviewSummary(
         String brand,
         String model,
         String ownerName,
+        String ownerPhone,
         double averageRating,
         long totalReviews,
         String sentimentLabel

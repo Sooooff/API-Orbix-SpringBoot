@@ -166,19 +166,22 @@ public class ResenaService {
 
     @Transactional(readOnly = true)
     public VehicleReviewSummary getVehicleSummary(Long vehicleId) {
-        Vehicle vehicle = vehicleRepository.findById(vehicleId)
+        Vehicle vehicle = vehicleRepository.findByIdWithOwner(vehicleId)
                 .orElseThrow(() -> new IllegalArgumentException("Vehículo no encontrado"));
 
         long total = resenaRepository.countByVehicleId(vehicleId);
         double average = total == 0 ? 0.0 : resenaRepository.averageRatingByVehicleId(vehicleId);
 
-        String ownerName = vehicle.getOwner() != null ? vehicle.getOwner().getNombre() : null;
+        Usuario owner = vehicle.getOwner();
+        String ownerName = owner != null ? owner.getNombre() : null;
+        String ownerPhone = owner != null ? owner.getTelefono() : null;
 
         return new VehicleReviewSummary(
                 vehicle.getId(),
                 vehicle.getBrand(),
                 vehicle.getModel(),
                 ownerName,
+                ownerPhone,
                 roundRating(average),
                 total,
                 sentimentLabel(average, total)
