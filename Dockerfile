@@ -14,8 +14,10 @@ RUN mvn clean package -DskipTests -B
 FROM eclipse-temurin:17-jre AS runtime
 WORKDIR /app
 
-# Usuario sin privilegios
-RUN groupadd --system spring && useradd --system --gid spring spring
+# curl para el HEALTHCHECK y usuario sin privilegios
+RUN apt-get update && apt-get install -y --no-install-recommends curl \
+    && rm -rf /var/lib/apt/lists/* \
+    && groupadd --system spring && useradd --system --gid spring spring
 USER spring:spring
 
 COPY --from=build /app/target/orbix-api-0.0.1-SNAPSHOT.jar app.jar
@@ -26,5 +28,9 @@ ENV SPRING_DATASOURCE_USERNAME=root
 ENV SPRING_DATASOURCE_PASSWORD=Agrolab(2026)
 
 EXPOSE 8082
+
+# Docker marca el contenedor como "healthy" cuando responde el endpoint de Actuator
+HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:8082/api/actuator/health || exit 1
 
 ENTRYPOINT ["java", "-jar", "app.jar"]
