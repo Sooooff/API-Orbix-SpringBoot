@@ -29,4 +29,12 @@ public interface RentaRepository extends JpaRepository<Renta, Long> {
               AND r.fechaFin >= :fechaInicio
             """)
     boolean existsApprovedOverlap(Long vehicleId, LocalDate fechaInicio, LocalDate fechaFin);
+
+    @Query("""
+            SELECT COUNT(r) > 0 FROM Renta r
+            WHERE r.vehicle.owner.id = :ownerId
+              AND r.cliente.id = :clienteId
+              AND r.estado = com.example.orbixapi.model.RentalStatus.APROBADA
+            """)
+    boolean existsApprovedRentalBetween(Long ownerId, Long clienteId);
 }

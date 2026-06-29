@@ -55,6 +55,22 @@ public final class ReviewTagCatalog {
             1, List.of(ReviewTag.MUY_IMPUNTUAL, ReviewTag.DANOS_AL_VEHICULO)
     );
 
+    private static final Map<Integer, String> VEHICLE_TITLES = Map.of(
+            5, "¿Qué destacó del vehículo?",
+            4, "¿Qué te gustó del vehículo?",
+            3, "¿Cómo estuvo el vehículo?",
+            2, "¿Qué no cumplió tus expectativas?",
+            1, "¿Qué salió mal con el vehículo?"
+    );
+
+    private static final Map<Integer, String> USER_TITLES = Map.of(
+            5, "¿Qué destacó del cliente?",
+            4, "¿Cómo fue la experiencia con el cliente?",
+            3, "¿Cómo se comportó el cliente?",
+            2, "¿Qué aspectos del cliente mejorarían?",
+            1, "¿Qué problema hubo con el cliente?"
+    );
+
     private ReviewTagCatalog() {
     }
 
@@ -70,6 +86,24 @@ public final class ReviewTagCatalog {
 
     public static Map<Integer, List<ReviewTagOption>> allUserOptions() {
         return toOptionsMap(USER_TAGS);
+    }
+
+    public static Map<Integer, String> allVehicleTitles() {
+        return Map.copyOf(VEHICLE_TITLES);
+    }
+
+    public static Map<Integer, String> allUserTitles() {
+        return Map.copyOf(USER_TITLES);
+    }
+
+    public static String titleFor(ReviewType type, int rating) {
+        if (rating < 1 || rating > 5) {
+            throw new IllegalArgumentException("La calificación debe estar entre 1 y 5");
+        }
+        return switch (type) {
+            case VEHICLE -> VEHICLE_TITLES.get(rating);
+            case USER -> USER_TITLES.get(rating);
+        };
     }
 
     public static void validate(ReviewType type, int rating, List<ReviewTag> selected) {

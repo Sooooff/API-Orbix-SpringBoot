@@ -15,6 +15,7 @@ import com.example.orbixapi.model.ReviewType;
 import com.example.orbixapi.model.RolNombre;
 import com.example.orbixapi.model.Usuario;
 import com.example.orbixapi.model.Vehicle;
+import com.example.orbixapi.repository.RentaRepository;
 import com.example.orbixapi.repository.ResenaRepository;
 import com.example.orbixapi.repository.ResenaUsuarioRepository;
 import com.example.orbixapi.repository.UsuarioRepository;
@@ -33,17 +34,20 @@ public class ResenaService {
     private final ResenaUsuarioRepository resenaUsuarioRepository;
     private final UsuarioRepository usuarioRepository;
     private final VehicleRepository vehicleRepository;
+    private final RentaRepository rentaRepository;
 
     public ResenaService(
             ResenaRepository resenaRepository,
             ResenaUsuarioRepository resenaUsuarioRepository,
             UsuarioRepository usuarioRepository,
-            VehicleRepository vehicleRepository
+            VehicleRepository vehicleRepository,
+            RentaRepository rentaRepository
     ) {
         this.resenaRepository = resenaRepository;
         this.resenaUsuarioRepository = resenaUsuarioRepository;
         this.usuarioRepository = usuarioRepository;
         this.vehicleRepository = vehicleRepository;
+        this.rentaRepository = rentaRepository;
     }
 
     @Transactional
@@ -102,6 +106,12 @@ public class ResenaService {
 
         if (reviewer.getId().equals(reviewed.getId())) {
             throw new IllegalArgumentException("No puedes reseñarte a ti mismo");
+        }
+
+        if (!rentaRepository.existsApprovedRentalBetween(reviewer.getId(), reviewed.getId())) {
+            throw new IllegalArgumentException(
+                    "Solo puedes reseñar clientes con los que tuviste una renta aprobada"
+            );
         }
 
         if (resenaUsuarioRepository.findByReviewerIdAndReviewedId(reviewer.getId(), reviewed.getId()).isPresent()) {
@@ -183,6 +193,7 @@ public class ResenaService {
         return new ReviewTagsResponse(
                 rating,
                 type,
+                ReviewTagCatalog.titleFor(type, rating),
                 ReviewTagCatalog.optionsFor(type, rating)
         );
     }
@@ -190,7 +201,9 @@ public class ResenaService {
     public AllReviewTagsResponse getAllTags() {
         return new AllReviewTagsResponse(
                 ReviewTagCatalog.allVehicleOptions(),
-                ReviewTagCatalog.allUserOptions()
+                ReviewTagCatalog.allUserOptions(),
+                ReviewTagCatalog.allVehicleTitles(),
+                ReviewTagCatalog.allUserTitles()
         );
     }
 
