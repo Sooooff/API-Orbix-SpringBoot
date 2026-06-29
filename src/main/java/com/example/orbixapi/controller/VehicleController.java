@@ -6,6 +6,7 @@ import com.example.orbixapi.model.Transmission;
 import com.example.orbixapi.model.Vehicle;
 import com.example.orbixapi.service.VehicleService;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
@@ -24,8 +25,20 @@ public class VehicleController {
     }
 
     @GetMapping
-    public List<VehicleResponse> getAll() {
+    public List<VehicleResponse> getAll(@AuthenticationPrincipal UserDetails userDetails) {
+        if (isArrendador(userDetails)) {
+            return service.getMine(userDetails.getUsername());
+        }
         return service.getAll();
+    }
+
+    private boolean isArrendador(UserDetails userDetails) {
+        if (userDetails == null) {
+            return false;
+        }
+        return userDetails.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .anyMatch("ROLE_ARRENDADOR"::equals);
     }
 
     @GetMapping("/mine")
