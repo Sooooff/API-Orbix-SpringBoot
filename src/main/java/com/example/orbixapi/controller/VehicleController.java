@@ -29,7 +29,7 @@ public class VehicleController {
         if (isArrendador(userDetails)) {
             return service.getMine(userDetails.getUsername());
         }
-        return service.getAll();
+        return service.getAll(userDetails != null ? userDetails.getUsername() : null);
     }
 
     private boolean isArrendador(UserDetails userDetails) {
@@ -54,8 +54,8 @@ public class VehicleController {
     }
 
     @GetMapping("/{id}")
-    public VehicleResponse getById(@PathVariable Long id) {
-        return service.getById(id);
+    public VehicleResponse getById(@PathVariable Long id, @AuthenticationPrincipal UserDetails userDetails) {
+        return service.getById(id, userDetails != null ? userDetails.getUsername() : null);
     }
 
     @PostMapping
