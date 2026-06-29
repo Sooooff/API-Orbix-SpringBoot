@@ -1,7 +1,7 @@
 package com.example.orbixapi.controller;
 
-import com.example.orbixapi.dto.VehicleDto;
 import com.example.orbixapi.dto.TransmissionOption;
+import com.example.orbixapi.dto.VehicleResponse;
 import com.example.orbixapi.model.Transmission;
 import com.example.orbixapi.model.Vehicle;
 import com.example.orbixapi.service.VehicleService;
@@ -24,8 +24,13 @@ public class VehicleController {
     }
 
     @GetMapping
-    public List<Vehicle> getAll() {
+    public List<VehicleResponse> getAll() {
         return service.getAll();
+    }
+
+    @GetMapping("/mine")
+    public List<VehicleResponse> getMine(@AuthenticationPrincipal UserDetails userDetails) {
+        return service.getMine(userDetails.getUsername());
     }
 
     @GetMapping("/transmissions")
@@ -35,9 +40,14 @@ public class VehicleController {
                 .toList();
     }
 
+    @GetMapping("/{id}")
+    public VehicleResponse getById(@PathVariable Long id) {
+        return service.getById(id);
+    }
+
     @PostMapping
     @PreAuthorize("hasAuthority('vehicles:create')")
-    public Vehicle save(
+    public VehicleResponse save(
             @RequestBody Vehicle vehicle,
             @AuthenticationPrincipal UserDetails userDetails
     ) {
