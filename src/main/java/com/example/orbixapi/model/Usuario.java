@@ -49,6 +49,14 @@ public class Usuario {
     )
     private Set<Rol> roles = new HashSet<>();
 
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "usuario_vehiculos_favoritos",
+            joinColumns = @JoinColumn(name = "usuario_id"),
+            inverseJoinColumns = @JoinColumn(name = "vehicle_id")
+    )
+    private Set<Vehicle> favoriteVehicles = new HashSet<>();
+
     @PrePersist
     void onCreate() {
         if (createdAt == null) {

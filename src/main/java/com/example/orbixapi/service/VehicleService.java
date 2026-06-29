@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
+import java.util.HashSet;
 
 @Service
 public class VehicleService {
@@ -23,9 +25,10 @@ public class VehicleService {
     }
 
     @Transactional(readOnly = true)
-    public List<VehicleResponse> getAll() {
+    public List<VehicleResponse> getAll(String userEmail) {
+        Set<Long> favoriteVehicleIds = getFavoriteVehicleIds(userEmail);
         return repository.findAllWithOwner().stream()
-                .map(this::toResponse)
+                .map(v -> toResponse(v, favoriteVehicleIds))
                 .toList();
     }
 
@@ -35,15 +38,16 @@ public class VehicleService {
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + ownerEmail));
 
         return repository.findByOwnerIdWithOwner(owner.getId()).stream()
-                .map(this::toResponse)
+                .map(v -> toResponse(v, Set.of()))
                 .toList();
     }
 
     @Transactional(readOnly = true)
-    public VehicleResponse getById(Long id) {
+    public VehicleResponse getById(Long id, String userEmail) {
         Vehicle vehicle = repository.findByIdWithOwner(id)
                 .orElseThrow(() -> new IllegalArgumentException("Vehículo no encontrado"));
-        return toResponse(vehicle);
+        Set<Long> favoriteVehicleIds = getFavoriteVehicleIds(userEmail);
+        return toResponse(vehicle, favoriteVehicleIds);
     }
 
     @Transactional
@@ -60,11 +64,22 @@ public class VehicleService {
         if (vehicle.getTransmission() == null) {
             throw new IllegalArgumentException("La transmisión es obligatoria");
         }
-        return toResponse(repository.save(vehicle));
+        return toResponse(repository.save(vehicle), Set.of());
     }
 
-    private VehicleResponse toResponse(Vehicle vehicle) {
+    private Set<Long> getFavoriteVehicleIds(String userEmail) {
+        Set<Long> favoriteVehicleIds = new HashSet<>();
+        if (userEmail != null) {
+            usuarioRepository.findByEmail(userEmail).ifPresent(user -> {
+                user.getFavoriteVehicles().forEach(fav -> favoriteVehicleIds.add(fav.getId()));
+            });
+        }
+        return favoriteVehicleIds;
+    }
+
+    private VehicleResponse toResponse(Vehicle vehicle, Set<Long> favoriteVehicleIds) {
         Usuario owner = vehicle.getOwner();
+        boolean isFavorite = favoriteVehicleIds.contains(vehicle.getId());
         return new VehicleResponse(
                 vehicle.getId(),
                 vehicle.getBrand(),
@@ -78,7 +93,8 @@ public class VehicleService {
                 vehicle.getDescription(),
                 vehicle.getCategory(),
                 owner != null ? owner.getId() : null,
-                owner != null ? owner.getNombre() : null
+                owner != null ? owner.getNombre() : null,
+                isFavorite
         );
     }
 }
