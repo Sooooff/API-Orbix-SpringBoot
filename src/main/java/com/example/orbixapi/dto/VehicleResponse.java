@@ -17,6 +17,7 @@ public record VehicleResponse(
         VehicleCategory category,
         Long ownerId,
         String ownerName,
-        Boolean isFavorite
+        Boolean isFavorite,
+        String ownerPhone
 ) {
 }

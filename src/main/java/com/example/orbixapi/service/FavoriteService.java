@@ -72,7 +72,8 @@ public class FavoriteService {
                 vehicle.getCategory(),
                 owner != null ? owner.getId() : null,
                 owner != null ? owner.getNombre() : null,
-                isFavorite
+                isFavorite,
+                owner != null ? owner.getTelefono() : null
         );
     }
 }
