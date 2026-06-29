@@ -28,15 +28,21 @@ public class DatabaseSchemaFixer implements CommandLineRunner {
             return;
         }
         jdbcTemplate.execute("ALTER TABLE vehicles ADD COLUMN IF NOT EXISTS transmision varchar(255)");
+
+        // La columna en ingles "transmission" solo existe en bases heredadas.
+        // En una base nueva no existe, asi que solo la usamos si esta presente.
+        String fuente = columnExists("vehicles", "transmission")
+                ? "COALESCE(transmision, transmission, '')"
+                : "COALESCE(transmision, '')";
         jdbcTemplate.execute("""
                 UPDATE vehicles
                 SET transmision = CASE
-                    WHEN LOWER(COALESCE(transmision, transmission, '')) LIKE '%manual%' THEN 'MANUAL'
-                    WHEN LOWER(COALESCE(transmision, transmission, '')) LIKE '%auto%' THEN 'AUTOMATICO'
+                    WHEN LOWER(%1$s) LIKE '%%manual%%' THEN 'MANUAL'
+                    WHEN LOWER(%1$s) LIKE '%%auto%%' THEN 'AUTOMATICO'
                     ELSE transmision
                 END
                 WHERE transmision IS NULL OR transmision NOT IN ('MANUAL', 'AUTOMATICO')
-                """);
+                """.formatted(fuente));
         jdbcTemplate.execute("UPDATE vehicles SET transmision = 'MANUAL' WHERE transmision IS NULL");
     }
 
