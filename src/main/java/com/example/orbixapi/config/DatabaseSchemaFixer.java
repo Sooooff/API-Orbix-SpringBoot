@@ -20,6 +20,24 @@ public class DatabaseSchemaFixer implements CommandLineRunner {
         jdbcTemplate.execute("UPDATE resenas SET fecha = NOW() WHERE fecha IS NULL");
         jdbcTemplate.execute("ALTER TABLE resenas_usuario ADD COLUMN IF NOT EXISTS fecha timestamp");
         jdbcTemplate.execute("UPDATE resenas_usuario SET fecha = NOW() WHERE fecha IS NULL");
+        fixVehicleTransmissionValues();
+    }
+
+    private void fixVehicleTransmissionValues() {
+        if (!tableExists("vehicles")) {
+            return;
+        }
+        jdbcTemplate.execute("ALTER TABLE vehicles ADD COLUMN IF NOT EXISTS transmision varchar(255)");
+        jdbcTemplate.execute("""
+                UPDATE vehicles
+                SET transmision = CASE
+                    WHEN LOWER(COALESCE(transmision, transmission, '')) LIKE '%manual%' THEN 'MANUAL'
+                    WHEN LOWER(COALESCE(transmision, transmission, '')) LIKE '%auto%' THEN 'AUTOMATICO'
+                    ELSE transmision
+                END
+                WHERE transmision IS NULL OR transmision NOT IN ('MANUAL', 'AUTOMATICO')
+                """);
+        jdbcTemplate.execute("UPDATE vehicles SET transmision = 'MANUAL' WHERE transmision IS NULL");
     }
 
     private void fixResenasVehicleColumn() {

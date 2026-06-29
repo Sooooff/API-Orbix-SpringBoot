@@ -35,6 +35,9 @@ public class VehicleService {
         if (vehicle.getCategory() == null) {
             throw new IllegalArgumentException("La categoría es obligatoria");
         }
+        if (vehicle.getTransmission() == null) {
+            throw new IllegalArgumentException("La transmisión es obligatoria");
+        }
         return repository.save(vehicle);
     }
 }

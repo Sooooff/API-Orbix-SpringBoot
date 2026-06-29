@@ -18,8 +18,9 @@ public class Vehicle {
 
     private String year;
 
-    //Pasarlo a ENUM
-    private String transmission;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "transmision")
+    private Transmission transmission;
 
     private String passengers;
 
