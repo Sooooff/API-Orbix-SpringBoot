@@ -74,6 +74,10 @@ public class AuthController {
 
         if (rolNombre == RolNombre.ROLE_ARRENDADOR) {
             validateTelefono(request.telefono());
+        } else {
+            if (request.telefono() != null && !request.telefono().isBlank()) {
+                validateTelefonoFormat(request.telefono());
+            }
         }
 
         Usuario usuario = new Usuario();
@@ -81,7 +85,7 @@ public class AuthController {
         usuario.setPassword(passwordEncoder.encode(request.password()));
         usuario.setNombre(request.nombre());
         usuario.setFechaNacimiento(request.fechaNacimiento());
-        if (rolNombre == RolNombre.ROLE_ARRENDADOR) {
+        if (request.telefono() != null && !request.telefono().isBlank()) {
             usuario.setTelefono(normalizeTelefono(request.telefono()));
         }
         usuario.setRoles(Set.of(rol));
@@ -113,6 +117,10 @@ public class AuthController {
         if (telefono == null || telefono.isBlank()) {
             throw new IllegalArgumentException("El teléfono es obligatorio para arrendadores");
         }
+        validateTelefonoFormat(telefono);
+    }
+
+    private void validateTelefonoFormat(String telefono) {
         String normalized = normalizeTelefono(telefono);
         if (!normalized.matches("^[+]?[0-9\\s-]{8,15}$")) {
             throw new IllegalArgumentException("El teléfono debe tener entre 8 y 15 dígitos");

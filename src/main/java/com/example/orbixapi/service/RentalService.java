@@ -174,6 +174,7 @@ public class RentalService {
                 cliente.getId(),
                 cliente.getNombre(),
                 cliente.getEmail(),
+                cliente.getTelefono(),
                 owner != null ? owner.getId() : null,
                 owner != null ? owner.getNombre() : null,
                 renta.getFechaInicio(),

@@ -15,6 +15,7 @@ public record RentalResponse(
         Long clienteId,
         String clienteNombre,
         String clienteEmail,
+        String clienteTelefono,
         Long ownerId,
         String ownerNombre,
         @JsonFormat(pattern = "yyyy-MM-dd")
