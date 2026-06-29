@@ -59,8 +59,12 @@ public class AuthController {
             throw new IllegalArgumentException("El email ya está registrado");
         }
 
-        var rol = rolRepository.findByNombre(RolNombre.ROLE_CLIENTE)
-                .orElseThrow(() -> new IllegalStateException("Rol no encontrado: ROLE_CLIENTE"));
+        RolNombre rolNombre = request.email().toLowerCase().endsWith("@orbix.com")
+                ? RolNombre.ROLE_ARRENDADOR
+                : RolNombre.ROLE_CLIENTE;
+
+        var rol = rolRepository.findByNombre(rolNombre)
+                .orElseThrow(() -> new IllegalStateException("Rol no encontrado: " + rolNombre));
 
         Usuario usuario = new Usuario();
         usuario.setEmail(request.email());
