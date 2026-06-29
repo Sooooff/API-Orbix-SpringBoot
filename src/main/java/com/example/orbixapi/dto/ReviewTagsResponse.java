@@ -7,6 +7,7 @@ import java.util.List;
 public record ReviewTagsResponse(
         int rating,
         ReviewType type,
+        String title,
         List<ReviewTagOption> tags
 ) {
 }

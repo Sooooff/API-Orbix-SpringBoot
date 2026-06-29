@@ -25,6 +25,8 @@ public record RentalResponse(
         @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
         LocalDateTime fechaSolicitud,
         long totalDias,
-        double totalPrecio
+        double totalPrecio,
+        boolean canReviewCliente,
+        boolean clienteAlreadyReviewed
 ) {
 }

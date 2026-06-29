@@ -5,6 +5,8 @@ import java.util.Map;
 
 public record AllReviewTagsResponse(
         Map<Integer, List<ReviewTagOption>> vehicle,
-        Map<Integer, List<ReviewTagOption>> user
+        Map<Integer, List<ReviewTagOption>> user,
+        Map<Integer, String> vehicleTitles,
+        Map<Integer, String> userTitles
 ) {
 }

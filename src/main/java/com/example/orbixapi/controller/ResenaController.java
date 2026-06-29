@@ -38,6 +38,22 @@ public class ResenaController {
         return resenaService.create(vehiculoId, request, userDetails.getUsername());
     }
 
+    @PostMapping("/from-arrendador/{clienteId}")
+    @ResponseStatus(HttpStatus.CREATED)
+    public UserReviewResponse createUserReviewFromArrendador(
+            @PathVariable Long clienteId,
+            @Valid @RequestBody CreateReviewBody request,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        CreateUserReviewRequest body = new CreateUserReviewRequest(
+                clienteId,
+                request.rating(),
+                request.tags(),
+                request.comment()
+        );
+        return resenaService.createUserReview(body, userDetails.getUsername());
+    }
+
     @PostMapping("/user")
     @ResponseStatus(HttpStatus.CREATED)
     public UserReviewResponse createUserReview(

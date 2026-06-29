@@ -8,6 +8,8 @@ import com.example.orbixapi.model.RolNombre;
 import com.example.orbixapi.model.Usuario;
 import com.example.orbixapi.model.Vehicle;
 import com.example.orbixapi.repository.RentaRepository;
+import com.example.orbixapi.repository.RentaRepository;
+import com.example.orbixapi.repository.ResenaUsuarioRepository;
 import com.example.orbixapi.repository.UsuarioRepository;
 import com.example.orbixapi.repository.VehicleRepository;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -24,15 +26,18 @@ public class RentalService {
     private final RentaRepository rentaRepository;
     private final UsuarioRepository usuarioRepository;
     private final VehicleRepository vehicleRepository;
+    private final ResenaUsuarioRepository resenaUsuarioRepository;
 
     public RentalService(
             RentaRepository rentaRepository,
             UsuarioRepository usuarioRepository,
-            VehicleRepository vehicleRepository
+            VehicleRepository vehicleRepository,
+            ResenaUsuarioRepository resenaUsuarioRepository
     ) {
         this.rentaRepository = rentaRepository;
         this.usuarioRepository = usuarioRepository;
         this.vehicleRepository = vehicleRepository;
+        this.resenaUsuarioRepository = resenaUsuarioRepository;
     }
 
     @Transactional
@@ -99,7 +104,7 @@ public class RentalService {
         }
 
         return rentaRepository.findByVehicleOwnerIdOrderByFechaSolicitudDesc(owner.getId()).stream()
-                .map(this::toResponse)
+                .map(renta -> toResponse(renta, owner.getId()))
                 .toList();
     }
 
@@ -142,6 +147,10 @@ public class RentalService {
     }
 
     private RentalResponse toResponse(Renta renta) {
+        return toResponse(renta, null);
+    }
+
+    private RentalResponse toResponse(Renta renta, Long ownerId) {
         Vehicle vehicle = renta.getVehicle();
         Usuario cliente = renta.getCliente();
         Usuario owner = vehicle.getOwner();
@@ -149,6 +158,12 @@ public class RentalService {
         long totalDias = ChronoUnit.DAYS.between(renta.getFechaInicio(), renta.getFechaFin()) + 1;
         double pricePerDay = vehicle.getPricePerDay() != null ? vehicle.getPricePerDay() : 0.0;
         double totalPrecio = totalDias * pricePerDay;
+
+        boolean clienteAlreadyReviewed = ownerId != null
+                && resenaUsuarioRepository.findByReviewerIdAndReviewedId(ownerId, cliente.getId()).isPresent();
+        boolean canReviewCliente = ownerId != null
+                && renta.getEstado() == RentalStatus.APROBADA
+                && !clienteAlreadyReviewed;
 
         return new RentalResponse(
                 renta.getId(),
@@ -166,7 +181,9 @@ public class RentalService {
                 renta.getEstado(),
                 renta.getFechaSolicitud(),
                 totalDias,
-                totalPrecio
+                totalPrecio,
+                canReviewCliente,
+                clienteAlreadyReviewed
         );
     }
 }
