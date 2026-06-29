@@ -86,6 +86,16 @@ public class ResenaController {
         return resenaService.getVehicleSummary(vehicleId);
     }
 
+    @GetMapping("/user/me/summary")
+    public UserReviewSummary getMySummary(@AuthenticationPrincipal UserDetails userDetails) {
+        return resenaService.getMySummary(userDetails.getUsername());
+    }
+
+    @GetMapping("/user/me")
+    public List<UserReviewResponse> getMyReviews(@AuthenticationPrincipal UserDetails userDetails) {
+        return resenaService.getMyReviews(userDetails.getUsername());
+    }
+
     @GetMapping("/user/{userId}")
     public List<UserReviewResponse> getByUser(@PathVariable Long userId) {
         return resenaService.getByUser(userId);
